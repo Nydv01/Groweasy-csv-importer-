@@ -4,7 +4,7 @@ import { useAppState } from '@/hooks/use-app-state';
 import { useTheme } from '@/hooks/use-theme';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { Header } from '@/components/layout/header';
-import { AmbientBackground } from '@/components/layout/background';
+import { AmbientBackground, CursorGlow } from '@/components/layout/background';
 import { UploadZone } from '@/features/upload/upload-zone';
 import { PreviewWorkspace } from '@/features/preview/preview-workspace';
 import { ConfirmDialog } from '@/features/import/confirm-dialog';
@@ -50,6 +50,7 @@ export function AppOrchestrator() {
   return (
     <>
       <AmbientBackground state={ambientState} />
+      {!reducedMotion && <CursorGlow />}
       <Header theme={theme} toggleTheme={toggleTheme} />
 
       <main style={{ position: 'relative', zIndex: 1 }}>

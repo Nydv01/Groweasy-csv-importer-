@@ -5,83 +5,40 @@ import { motion } from 'framer-motion';
 interface HeaderProps {
   theme: string;
   toggleTheme: () => void;
+  isProcessing?: boolean;
 }
 
-export function Header({ theme, toggleTheme }: HeaderProps) {
+export function Header({ theme, toggleTheme, isProcessing }: HeaderProps) {
   return (
-    <header
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        borderBottom: '1px solid var(--border)',
-        background: 'var(--bg-primary)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-      }}
-    >
-      <div style={{
-        maxWidth: 1200,
-        margin: '0 auto',
-        padding: '0 24px',
-        height: 56,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}>
+    <header className="app-header">
+      <div className="header-inner">
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 28,
-            height: 28,
-            borderRadius: 8,
-            background: 'var(--accent)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M4 12L8 4L12 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <motion.div
+            className="logo-mark"
+            whileHover={{ rotate: -8, scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+              <path d="M4 12L8 4L12 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M5.5 9H10.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
             </svg>
-          </div>
-          <span style={{ fontWeight: 700, fontSize: '0.9375rem', letterSpacing: '-0.02em' }}>
-            GrowEasy
-          </span>
-          <span style={{
-            fontSize: '0.75rem',
-            color: 'var(--text-tertiary)',
-            fontWeight: 500,
-            padding: '2px 8px',
-            background: 'var(--bg-elevated)',
-            borderRadius: 100,
-            border: '1px solid var(--border)',
-          }}>
+          </motion.div>
+          <span className="logo-text">GrowEasy</span>
+          <span className="logo-badge">
+            {isProcessing && <span className="status-dot" style={{ display: 'inline-block', marginRight: 6 }} />}
             CSV Importer
           </span>
         </div>
 
         {/* Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {/* Theme Toggle */}
           <motion.button
             onClick={toggleTheme}
+            className="theme-toggle"
             whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.92 }}
             aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 8,
-              border: '1px solid var(--border)',
-              background: 'var(--bg-surface)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-secondary)',
-              transition: 'all 150ms ease',
-            }}
           >
             {theme === 'dark' ? (
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
