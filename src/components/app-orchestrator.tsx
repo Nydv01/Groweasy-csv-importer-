@@ -55,11 +55,12 @@ export function AppOrchestrator() {
       {!reducedMotion && <CursorGlow />}
       <Header theme={theme} toggleTheme={toggleTheme} />
 
-      <main style={{ position: 'relative', zIndex: 1 }}>
+      <main style={{ position: 'relative', zIndex: 1 }} className="w-full flex flex-col items-center">
         <AnimatePresence mode="wait">
           {showUpload && (
             <motion.div
               key="upload"
+              className="w-full"
               initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -20, scale: 0.98 }}
@@ -72,6 +73,7 @@ export function AppOrchestrator() {
           {showPreview && (
             <motion.div
               key="preview"
+              className="w-full"
               initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.98 }}
@@ -84,6 +86,7 @@ export function AppOrchestrator() {
           {showProcessing && (
             <motion.div
               key="processing"
+              className="w-full"
               initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -20 }}
@@ -96,6 +99,7 @@ export function AppOrchestrator() {
           {showResults && (
             <motion.div
               key="results"
+              className="w-full"
               initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={motionPresets.spatial}
@@ -107,6 +111,7 @@ export function AppOrchestrator() {
           {showSkipped && (
             <motion.div
               key="skipped"
+              className="w-full"
               initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
@@ -119,6 +124,7 @@ export function AppOrchestrator() {
           {showError && (
             <motion.div
               key="error"
+              className="w-full"
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={motionPresets.standard}

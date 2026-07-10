@@ -299,7 +299,7 @@ export function UploadZone() {
   );
 
   return (
-    <section>
+    <section className="w-full">
       <AnimatePresence mode="wait">
         {!isFileAccepted ? (
           reducedMotion ? (
