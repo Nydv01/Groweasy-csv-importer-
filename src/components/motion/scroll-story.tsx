@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
+import { TextReveal } from '@/components/motion/text-reveal';
 
 const STAGES = [
   {
@@ -51,9 +52,20 @@ export function ScrollStory() {
   const opacity0 = useTransform(smoothProgress, [0, 0.15, 0.28, 0.33], [0, 1, 1, 0]);
   const opacity1 = useTransform(smoothProgress, [0.3, 0.4, 0.6, 0.66], [0, 1, 1, 0]);
   const opacity2 = useTransform(smoothProgress, [0.6, 0.7, 0.9, 1], [0, 1, 1, 0.8]);
+  
   const y0 = useTransform(smoothProgress, [0, 0.15, 0.28, 0.33], [40, 0, 0, -30]);
   const y1 = useTransform(smoothProgress, [0.3, 0.4, 0.6, 0.66], [40, 0, 0, -30]);
   const y2 = useTransform(smoothProgress, [0.6, 0.7, 0.9, 1], [40, 0, 0, 0]);
+
+  // Modern 3D Tilt transforms
+  const rotateX0 = useTransform(smoothProgress, [0, 0.33], [10, -5]);
+  const rotateY0 = useTransform(smoothProgress, [0, 0.33], [-10, 5]);
+
+  const rotateX1 = useTransform(smoothProgress, [0.3, 0.66], [10, -5]);
+  const rotateY1 = useTransform(smoothProgress, [0.3, 0.66], [-10, 5]);
+
+  const rotateX2 = useTransform(smoothProgress, [0.6, 0.95], [10, 0]);
+  const rotateY2 = useTransform(smoothProgress, [0.6, 0.95], [-10, 0]);
 
   if (reducedMotion) {
     return (
@@ -112,10 +124,10 @@ export function ScrollStory() {
         {/* Left: Visualization */}
         <div style={{
           flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '2rem', position: 'relative',
+          padding: '2rem', position: 'relative', perspective: '1000px',
         }}>
           {/* Stage 0: Scattered source columns */}
-          <motion.div style={{ opacity: opacity0, y: y0, position: 'absolute' }}>
+          <motion.div style={{ opacity: opacity0, y: y0, rotateX: rotateX0, rotateY: rotateY0, position: 'absolute' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, maxWidth: 340, justifyContent: 'center' }}>
               {STAGES[0].sourceColumns!.map((col, i) => (
                 <motion.div
@@ -141,7 +153,7 @@ export function ScrollStory() {
           </motion.div>
 
           {/* Stage 1: Mapping connections */}
-          <motion.div style={{ opacity: opacity1, y: y1, position: 'absolute' }}>
+          <motion.div style={{ opacity: opacity1, y: y1, rotateX: rotateX1, rotateY: rotateY1, position: 'absolute' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {STAGES[1].mappings?.map((m, i) => (
                 <motion.div
@@ -182,7 +194,7 @@ export function ScrollStory() {
           </motion.div>
 
           {/* Stage 2: Clean CRM fields */}
-          <motion.div style={{ opacity: opacity2, y: y2, position: 'absolute' }}>
+          <motion.div style={{ opacity: opacity2, y: y2, rotateX: rotateX2, rotateY: rotateY2, position: 'absolute' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, maxWidth: 320 }}>
               {STAGES[2].crmFields?.map((field, i) => (
                 <motion.div
@@ -236,7 +248,9 @@ export function ScrollStory() {
                   </div>
                   <h3 className="text-heading">{stage.title}</h3>
                 </div>
-                <p className="text-body" style={{ paddingLeft: 46 }}>{stage.description}</p>
+                <div style={{ paddingLeft: 46 }}>
+                  <TextReveal text={stage.description} />
+                </div>
               </motion.div>
             ))}
           </div>
