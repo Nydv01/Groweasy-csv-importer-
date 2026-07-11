@@ -7,8 +7,8 @@ Designed with modern typography, smooth animations, and robust system engineerin
 ---
 
 ## 🚀 Live Demo & Repository
-- **GitHub Repository**: [GitHub Repository URL]
-- **Hosted Application**: [Hosted Application URL]
+- **GitHub Repository**: https://github.com/Nydv01/Groweasy-csv-importer-.git
+- **Hosted Application**: https://groweasy-csv-importer-ashy.vercel.app/
 
 ---
 
