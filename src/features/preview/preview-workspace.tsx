@@ -6,6 +6,7 @@ import { useAppState } from '@/hooks/use-app-state';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { formatFileSize, pluralize, truncateFilename, delimiterLabel, formatNumber } from '@/lib/utils';
 import { motionPresets } from '@/lib/motion/presets';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 export function PreviewWorkspace() {
   const { data, dispatch } = useAppState();
@@ -37,9 +38,20 @@ export function PreviewWorkspace() {
     return Object.values(row).some(v => v?.toLowerCase().includes(lower));
   }) || [];
 
-  const MAX_VISIBLE = 200;
-  const visibleRows = filteredRows.slice(0, MAX_VISIBLE);
-  const hasMore = filteredRows.length > MAX_VISIBLE;
+  // Row virtualization
+  const rowVirtualizer = useVirtualizer({
+    count: filteredRows.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => 41, // Height of standard row in pixels
+    overscan: 15,
+  });
+
+  const virtualRows = rowVirtualizer.getVirtualItems();
+  const totalSize = rowVirtualizer.getTotalSize();
+
+  const paddingTop = virtualRows.length > 0 ? virtualRows[0].start : 0;
+  const paddingBottom = virtualRows.length > 0 ? totalSize - virtualRows[virtualRows.length - 1].end : 0;
+
 
   const handleCopy = useCallback((value: string, key: string) => {
     navigator.clipboard.writeText(value);
@@ -137,8 +149,7 @@ export function PreviewWorkspace() {
         </div>
 
         <span className="text-caption tabular-nums">
-          {search ? `${formatNumber(filteredRows.length)} matching` : `${formatNumber(visibleRows.length)} of ${formatNumber(parsedCSV.rowCount)} shown`}
-          {hasMore && !search ? ` (first ${MAX_VISIBLE})` : ''}
+          {search ? `${formatNumber(filteredRows.length)} matching` : `${formatNumber(filteredRows.length)} rows`}
         </span>
       </motion.div>
 
@@ -163,26 +174,40 @@ export function PreviewWorkspace() {
               </tr>
             </thead>
             <tbody>
-              {visibleRows.map((row, rowIdx) => (
-                <tr key={rowIdx}>
-                  <td className="row-number">{rowIdx + 1}</td>
-                  {parsedCSV.headers.map((header) => {
-                    const value = row[header] || '';
-                    const cellKey = `${rowIdx}-${header}`;
-                    return (
-                      <td
-                        key={header}
-                        onClick={() => value && handleCopy(value, cellKey)}
-                        title={value.length > 30 ? value : undefined}
-                        className={copiedCell === cellKey ? 'copy-flash' : ''}
-                        style={{ cursor: value ? 'pointer' : 'default' }}
-                      >
-                        {value || <span style={{ color: 'var(--text-tertiary)', fontStyle: 'italic', opacity: 0.4 }}>—</span>}
-                      </td>
-                    );
-                  })}
+              {paddingTop > 0 && (
+                <tr>
+                  <td colSpan={parsedCSV.headers.length + 1} style={{ height: `${paddingTop}px`, padding: 0, border: 0 }} />
                 </tr>
-              ))}
+              )}
+              {virtualRows.map((virtualRow) => {
+                const row = filteredRows[virtualRow.index];
+                const rowIdx = virtualRow.index;
+                return (
+                  <tr key={virtualRow.key} data-index={virtualRow.index} ref={rowVirtualizer.measureElement}>
+                    <td className="row-number">{rowIdx + 1}</td>
+                    {parsedCSV.headers.map((header) => {
+                      const value = row[header] || '';
+                      const cellKey = `${rowIdx}-${header}`;
+                      return (
+                        <td
+                          key={header}
+                          onClick={() => value && handleCopy(value, cellKey)}
+                          title={value.length > 30 ? value : undefined}
+                          className={copiedCell === cellKey ? 'copy-flash' : ''}
+                          style={{ cursor: value ? 'pointer' : 'default' }}
+                        >
+                          {value || <span style={{ color: 'var(--text-tertiary)', fontStyle: 'italic', opacity: 0.4 }}>—</span>}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+              {paddingBottom > 0 && (
+                <tr>
+                  <td colSpan={parsedCSV.headers.length + 1} style={{ height: `${paddingBottom}px`, padding: 0, border: 0 }} />
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

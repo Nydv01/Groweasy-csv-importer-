@@ -9,6 +9,8 @@ import { CRM_FIELDS, CRM_STATUS_LABELS, type CrmStatus, type CrmRecord } from '@
 import { motionPresets, springPresets, staggerChildren, fadeInUp } from '@/lib/motion/presets';
 import { AnimatedCounter } from '@/components/effects/animated-counter';
 import type { ProcessedRecord } from '@/types/import';
+import { useVirtualizer } from '@tanstack/react-virtual';
+
 
 function StatusBadge({ status }: { status: string }) {
   if (!status) return <span style={{ color: 'var(--text-tertiary)', fontSize: '0.75rem' }}>—</span>;
@@ -154,8 +156,20 @@ export function ResultsView() {
   const statuses = useMemo(() => Array.from(new Set(results.map(r => r.record.crm_status).filter(Boolean))), [results]);
   const sources = useMemo(() => Array.from(new Set(results.map(r => r.record.data_source).filter(Boolean))), [results]);
 
-  const MAX_VISIBLE = 200;
-  const visibleResults = filteredResults.slice(0, MAX_VISIBLE);
+  // Row virtualization
+  const rowVirtualizer = useVirtualizer({
+    count: filteredResults.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => 41, // Height of standard row in pixels
+    overscan: 15,
+  });
+
+  const virtualRows = rowVirtualizer.getVirtualItems();
+  const totalSize = rowVirtualizer.getTotalSize();
+
+  const paddingTop = virtualRows.length > 0 ? virtualRows[0].start : 0;
+  const paddingBottom = virtualRows.length > 0 ? totalSize - virtualRows[virtualRows.length - 1].end : 0;
+
 
   return (
     <section style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 24px 80px' }}>
@@ -371,28 +385,41 @@ export function ResultsView() {
                 </tr>
               </thead>
               <tbody>
-                {visibleResults.map((r) => (
-                  <tr key={r.source_row_index}>
-                    <td className="row-number">{r.source_row_index + 1}</td>
-                    {CRM_FIELDS.map(field => {
-                      const value = r.record[field as keyof CrmRecord] || '';
-                      const cellKey = `${r.source_row_index}-${field}`;
-                      if (field === 'crm_status') return <td key={field}><StatusBadge status={value} /></td>;
-                      return (
-                        <td
-                          key={field}
-                          onClick={() => value && handleCopy(value, cellKey)}
-                          title={value.length > 25 ? value : undefined}
-                          className={copiedCell === cellKey ? 'copy-flash' : ''}
-                          style={{ cursor: value ? 'pointer' : 'default' }}
-                        >
-                          {value || <span style={{ color: 'var(--text-tertiary)', opacity: 0.4 }}>—</span>}
-                        </td>
-                      );
-                    })}
+                {paddingTop > 0 && (
+                  <tr>
+                    <td colSpan={CRM_FIELDS.length + 1} style={{ height: `${paddingTop}px`, padding: 0, border: 0 }} />
                   </tr>
-                ))}
-                {visibleResults.length === 0 && (
+                )}
+                {virtualRows.map((virtualRow) => {
+                  const r = filteredResults[virtualRow.index];
+                  return (
+                    <tr key={virtualRow.key} data-index={virtualRow.index} ref={rowVirtualizer.measureElement}>
+                      <td className="row-number">{r.source_row_index + 1}</td>
+                      {CRM_FIELDS.map(field => {
+                        const value = r.record[field as keyof CrmRecord] || '';
+                        const cellKey = `${r.source_row_index}-${field}`;
+                        if (field === 'crm_status') return <td key={field}><StatusBadge status={value} /></td>;
+                        return (
+                          <td
+                            key={field}
+                            onClick={() => value && handleCopy(value, cellKey)}
+                            title={value.length > 25 ? value : undefined}
+                            className={copiedCell === cellKey ? 'copy-flash' : ''}
+                            style={{ cursor: value ? 'pointer' : 'default' }}
+                          >
+                            {value || <span style={{ color: 'var(--text-tertiary)', opacity: 0.4 }}>—</span>}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+                {paddingBottom > 0 && (
+                  <tr>
+                    <td colSpan={CRM_FIELDS.length + 1} style={{ height: `${paddingBottom}px`, padding: 0, border: 0 }} />
+                  </tr>
+                )}
+                {filteredResults.length === 0 && (
                   <tr>
                     <td
                       colSpan={CRM_FIELDS.length + 1}
@@ -406,12 +433,6 @@ export function ResultsView() {
             </table>
           </div>
         </div>
-
-        {filteredResults.length > MAX_VISIBLE && (
-          <p className="text-caption" style={{ marginTop: 10, textAlign: 'center' }}>
-            Showing first {MAX_VISIBLE} of {formatNumber(filteredResults.length)} records. Export CSV for full data.
-          </p>
-        )}
       </motion.div>
 
       {/* Copy toast */}
